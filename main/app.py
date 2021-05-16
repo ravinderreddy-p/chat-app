@@ -4,8 +4,9 @@ from functools import wraps
 import jwt
 from flask import Flask, jsonify, request, make_response
 from flask_login import LoginManager, logout_user, login_required
-from main.models import db_setup, User, db
+from main.models import db_setup, User, db, Group
 from werkzeug.security import check_password_hash, generate_password_hash
+
 
 app = Flask(__name__)
 app.config['SECRET_KEY'] = 'thisissecretkey'
@@ -114,3 +115,22 @@ def register_user():
 @token_required
 def logout(current_user):
     return 'User logged out successfully'
+
+
+@app.route('/createGroup', methods=['POST'])
+def createGroup():
+    body = request.get_json()
+    name = body.get('name')
+    admin = body.get('admin')
+    users = body.get('list_of_users')
+    create_time = datetime.utcnow()
+
+    group = Group(
+        name=name,
+        admin=admin,
+        users=users,
+        create_time=create_time
+    )
+    db.session.add(group)
+    db.session.commit()
+    return make_response('Success', 200)
